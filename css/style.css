@@ -1,0 +1,11 @@
+/* Reset styles goes here */
+* {
+    padding: 0;
+    margin: 0;
+}
+
+button {
+    background-color: transparent;
+    padding: 0;
+    border: 0;
+}
