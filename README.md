@@ -2,17 +2,16 @@
 
 ##### It is the carousel writter in pure Javascript.
 
-..* [Demo](https://lcbiplove.github.io/lf-slider/)
+* [Demo](https://lcbiplove.github.io/lf-slider/)
 
 
 ## Features
-___
 
-..* Animation through Javascript
-..* Slides in forward infinite direction
-..* Dots indicators
-..* Buttons to control slides
-..* Multiple slides
+* Animation through Javascript
+* Slides in forward infinite direction
+* Dots indicators
+* Buttons to control slides
+* Multiple slides
 
 
 ## Installation
@@ -43,8 +42,7 @@ You can install the Slider on your site by:
 
 4. Initialize Slider. It expect `id`, `hold`, `transitionTime`, `autoplay`:
 ```javascript
-new Slider("first-slider", 4000, 400);
-new Slider("second-slider", 2000, 200, false);
+new Slider("first-slider", 4000, 400, true);
 ```
 
 
