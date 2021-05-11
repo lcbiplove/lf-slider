@@ -1,14 +1,28 @@
-function Slider(imageWrapperId, hold = 4000, transitionTime = 400) {
+/**
+ * Slider animates slides horizontally
+ *
+ * @param {*} imageWrapperId - Image wrapper element id
+ * @param {int} hold - Time to hold the slides (in milliseconds)
+ * @param {int} transitionTime - Time to change slide (in milliseconds)
+ * @param {boolean} autoplay - Autoplay slides or not
+ */
+function Slider(
+  imageWrapperId,
+  hold = 4000,
+  transitionTime = 400,
+  autoplay = true
+) {
   const IMAGE_WIDTH = 800;
   const IMAGE_HEIGHT = 600;
 
-  this.transitionTime = transitionTime;
-  this.hold = hold;
+  const IS_AUTOPLAY = autoplay;
+  const TRANSITION_TIME = transitionTime;
+  const HOLD_TIME = hold;
 
   this.sliderIndex = 1;
   this.carouselImageContainer = document.getElementById(`${imageWrapperId}`);
-  this.carouselContainer = this.carouselImageContainer.parentElement;
 
+  this.carouselContainer = this.carouselImageContainer.parentElement;
   const arrowsWrapper = document.createElement("div");
   arrowsWrapper.className = "carousel-controls";
 
@@ -37,6 +51,21 @@ function Slider(imageWrapperId, hold = 4000, transitionTime = 400) {
   this.carouselImageContainer.style.transform = `translateX(-800px) translateZ(0)`;
   this.slidesCount = this.carouselImageContainer.childElementCount;
 
+  this.autoplay = () => {
+    this.autoplay.interval = setInterval(() => {
+      this.next.click();
+    }, HOLD_TIME);
+  };
+
+  this.resetAutoplay = () => {
+    if (IS_AUTOPLAY) {
+      clearInterval(this.autoplay.interval);
+      this.autoplay();
+    }
+  };
+
+  this.resetAutoplay();
+
   /**
    * Animate slides to destination slide index
    *
@@ -47,7 +76,7 @@ function Slider(imageWrapperId, hold = 4000, transitionTime = 400) {
     const distance = (toIndex - fromIndex) * IMAGE_WIDTH;
 
     // Expected pixels move per 20ms
-    const pxPerTwentyMS = (distance / this.transitionTime) * 20;
+    const pxPerTwentyMS = (distance / TRANSITION_TIME) * 20;
 
     let moved = 0;
     const currentTranslateX = fromIndex * IMAGE_WIDTH;
@@ -86,6 +115,8 @@ function Slider(imageWrapperId, hold = 4000, transitionTime = 400) {
    * Next Button
    */
   this.next.onclick = () => {
+    this.resetAutoplay();
+
     if (this.isNextEnd()) return;
 
     this.indicators.forEach(elem => {
@@ -104,6 +135,8 @@ function Slider(imageWrapperId, hold = 4000, transitionTime = 400) {
    * Previous Button
    */
   this.prev.onclick = () => {
+    this.resetAutoplay();
+
     if (this.isPrevEnd()) return;
 
     this.indicators.forEach(elem => {
@@ -152,6 +185,8 @@ function Slider(imageWrapperId, hold = 4000, transitionTime = 400) {
     this.indicators.push(dot);
 
     dot.onclick = () => {
+      this.resetAutoplay();
+
       // Check if slide of current dot is shown
       if (this.sliderIndex === ind + 1) return;
 
