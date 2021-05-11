@@ -71,7 +71,7 @@ function Slider(imageWrapperId, hold = 4000, transitionTime = 400) {
    * @returns {boolean}
    */
   this.isNextEnd = () => {
-    return this.sliderIndex >= this.slidesCount;
+    return this.sliderIndex + 2 > this.slidesCount;
   };
 
   /**
@@ -130,8 +130,6 @@ function Slider(imageWrapperId, hold = 4000, transitionTime = 400) {
       this.sliderIndex = this.slidesCount - 2;
       this.animate(this.sliderIndex, this.sliderIndex);
     }
-
-    console.log(this.sliderIndex);
 
     if (currentSlide.id === clonedFirstImage.id) {
       this.carouselImageContainer.style.transition = "none";
