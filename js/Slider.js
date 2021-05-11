@@ -1,13 +1,11 @@
-function Slider(
-  imageWrapperId,
-  hold = 4000,
-  transitionTime = 400,
-  transitionStyle = "linear"
-) {
+function Slider(imageWrapperId, hold = 4000, transitionTime = 400) {
   const IMAGE_WIDTH = 800;
   const IMAGE_HEIGHT = 600;
 
-  this.sliderNumber = 1;
+  this.transitionTime = transitionTime;
+  this.hold = hold;
+
+  this.sliderIndex = 1;
   this.carouselImageContainer = document.getElementById(`${imageWrapperId}`);
   this.carouselContainer = this.carouselImageContainer.parentElement;
 
@@ -39,17 +37,54 @@ function Slider(
   this.carouselImageContainer.style.transform = `translateX(-800px) translateZ(0)`;
   this.slidesCount = this.carouselImageContainer.childElementCount;
 
-  /* Is Next limit reached? */
+  /**
+   * Animate slides to destination slide index
+   *
+   * @param {int} fromIndex
+   * @param {int} toIndex
+   */
+  this.animate = (fromIndex, toIndex) => {
+    const distance = (toIndex - fromIndex) * IMAGE_WIDTH;
+
+    // Expected pixels move per 20ms
+    const pxPerTwentyMS = (distance / this.transitionTime) * 20;
+
+    let moved = 0;
+    const currentTranslateX = fromIndex * IMAGE_WIDTH;
+    const interval = setInterval(() => {
+      moved += pxPerTwentyMS;
+
+      this.carouselImageContainer.style.transform = `translateX(-${
+        currentTranslateX + moved
+      }px) translateZ(0)`;
+
+      if (distance === moved) {
+        this.onAnimationEnd();
+
+        clearInterval(interval);
+      }
+    }, 20); // Animation runs every 20ms
+  };
+
+  /**
+   * There is no slide in next direction
+   * @returns {boolean}
+   */
   this.isNextEnd = () => {
-    return this.sliderNumber >= this.slidesCount;
+    return this.sliderIndex >= this.slidesCount;
   };
 
-  /* Is Previous limit reached? */
+  /**
+   * There is no slide in previous direction
+   * @returns {boolean}
+   */
   this.isPrevEnd = () => {
-    return this.sliderNumber <= 0;
+    return this.sliderIndex <= 0;
   };
 
-  /* Next button */
+  /**
+   * Next Button
+   */
   this.next.onclick = () => {
     if (this.isNextEnd()) return;
 
@@ -57,19 +92,17 @@ function Slider(
       elem.classList.remove("active");
     });
 
-    let index =
-      this.sliderNumber >= this.slidesCount - 2 ? 0 : this.sliderNumber;
+    let index = this.sliderIndex >= this.slidesCount - 2 ? 0 : this.sliderIndex;
     this.indicators[index].className = "active";
 
-    this.sliderNumber++;
+    this.sliderIndex++;
 
-    this.carouselImageContainer.style.transform = `translateX(-${
-      IMAGE_WIDTH * this.sliderNumber
-    }px) translateZ(0)`;
-    this.carouselImageContainer.style.transition = `transform ${transitionTime}ms ${transitionStyle}`;
+    this.animate(this.sliderIndex - 1, this.sliderIndex);
   };
 
-  /* Previous button */
+  /**
+   * Previous Button
+   */
   this.prev.onclick = () => {
     if (this.isPrevEnd()) return;
 
@@ -78,41 +111,38 @@ function Slider(
     });
 
     let index =
-      this.sliderNumber === 1 ? this.slidesCount - 3 : this.sliderNumber - 2;
+      this.sliderIndex === 1 ? this.slidesCount - 3 : this.sliderIndex - 2;
     this.indicators[index].className = "active";
 
-    this.sliderNumber--;
+    this.sliderIndex--;
 
-    this.carouselImageContainer.style.transform = `translateX(-${
-      IMAGE_WIDTH * this.sliderNumber
-    }px) translateZ(0)`;
-    this.carouselImageContainer.style.transition = `transform ${transitionTime}ms ${transitionStyle}`;
+    this.animate(this.sliderIndex + 1, this.sliderIndex);
   };
 
-  this.carouselImageContainer.ontransitionend = () => {
+  /**
+   * When animation ends
+   */
+  this.onAnimationEnd = () => {
     // When the slider reached the cloned last element
-    if (
-      this.carouselImageContainer.children[this.sliderNumber].id ===
-      clonedLastImage.id
-    ) {
+    const currentSlide = this.carouselImageContainer.children[this.sliderIndex];
+    if (currentSlide.id === clonedLastImage.id) {
       this.carouselImageContainer.style.transition = "none";
-      this.sliderNumber = this.slidesCount - 2;
-      this.carouselImageContainer.style.transform = `translateX(${
-        -IMAGE_WIDTH * this.sliderNumber
-      }px)`;
+      this.sliderIndex = this.slidesCount - 2;
+      this.animate(this.sliderIndex, this.sliderIndex);
     }
 
-    if (
-      this.carouselImageContainer.children[this.sliderNumber].id ===
-      clonedFirstImage.id
-    ) {
+    console.log(this.sliderIndex);
+
+    if (currentSlide.id === clonedFirstImage.id) {
       this.carouselImageContainer.style.transition = "none";
-      this.sliderNumber = 1;
-      this.carouselImageContainer.style.transform = `translateX(${
-        -IMAGE_WIDTH * this.sliderNumber
-      }px)`;
+      this.sliderIndex = this.slidesCount - this.sliderIndex;
+      this.animate(this.sliderIndex, this.sliderIndex);
     }
   };
+
+  /**
+   * Dots creations and event listener
+   */
 
   const dotsWrapper = document.createElement("div");
   dotsWrapper.className = "carousel-indicators";
@@ -124,18 +154,17 @@ function Slider(
     this.indicators.push(dot);
 
     dot.onclick = () => {
+      // Check if slide of current dot is shown
+      if (this.sliderIndex === ind + 1) return;
+
       this.indicators.forEach(elem => {
         elem.classList.remove("active");
       });
+      this.sliderIndex = ind + 1;
 
-      this.carouselImageContainer.style.transform = `translateX(${
-        -IMAGE_WIDTH * (ind + 1)
-      }px)`;
-      this.carouselImageContainer.style.transition = `transform ${transitionTime}ms ${transitionStyle}`;
+      this.animate(this.sliderIndex - 1, this.sliderIndex);
 
       dot.className = "active";
-
-      this.sliderNumber++;
     };
   }
   // Show active status to initial slide
